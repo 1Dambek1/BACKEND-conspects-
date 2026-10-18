@@ -151,6 +151,61 @@ celery -A app.celery_conn:app worker --loglevel=INFO
 
 Worker должен импортировать то же приложение Celery и задачи, что использует FastAPI. Для простоты этот пример рассчитан на запуск worker-а в Linux, WSL или контейнере; Celery официально не поддерживает Windows как production-платформу.
 
+## Запустить несколько workers
+
+Есть два способа увеличить число одновременно выполняемых задач:
+
+1. Увеличить число процессов внутри одного worker-а с помощью `--concurrency`.
+2. Запустить несколько отдельных worker-процессов. У каждого должно быть своё имя.
+
+Например, запусти в двух отдельных терминалах:
+
+```bash
+celery -A app.celery_conn:app worker --loglevel=INFO --concurrency=2 --hostname=worker1@%h
+```
+
+```bash
+celery -A app.celery_conn:app worker --loglevel=INFO --concurrency=2 --hostname=worker2@%h
+```
+
+Оба worker-а подключатся к одной очереди Redis и будут брать из неё задачи. У каждого по два процесса для выполнения, значит вместе они могут выполнять до четырёх задач одновременно. Имена должны быть разными, иначе Celery не сможет различать workers.
+
+Для первого запуска можно начать с одного worker-а и `--concurrency=2`:
+
+```bash
+celery -A app.celery_conn:app worker --loglevel=INFO --concurrency=2
+```
+
+`--concurrency` по умолчанию обычно равен числу CPU-ядер. Для коротких задач, которые в основном ждут сеть или диск, число можно увеличить. Для задач, которые долго считают, начинай примерно с числа ядер и проверяй нагрузку. Каждый дополнительный процесс использует память.
+
+Запуск нескольких workers в разных терминалах удобен для обучения. На сервере их обычно запускают как отдельные службы или контейнеры, чтобы они автоматически перезапускались после сбоя.
+
+## Flower — веб-монитор Celery
+
+Flower показывает состояние workers и задач в браузере: какие workers подключены, что выполняется сейчас, сколько задач завершилось и какие ошибки случились.
+
+Установка:
+
+```bash
+pip install flower
+```
+
+Запусти Flower отдельно от Redis, FastAPI и workers:
+
+```bash
+celery -A app.celery_conn:app flower --port=5555
+```
+
+Открой в браузере [http://localhost:5555](http://localhost:5555). Flower использует настройки Celery-приложения и подключается к тому же broker. В интерфейсе должны отображаться оба worker-а с разными именами.
+
+Для локальной разработки этого достаточно. Не выставляй Flower открыто в интернет без защиты: панель позволяет видеть задачи и управлять workers. Можно включить Basic Auth:
+
+```bash
+celery -A app.celery_conn:app flower --port=5555 --basic-auth=ИМЯ:СЛОЖНЫЙ_ПАРОЛЬ
+```
+
+Используй свой пароль и храни его в настройках окружения, а не в Git.
+
 ## Отправка задачи из FastAPI
 
 `app/main.py`:
@@ -251,3 +306,6 @@ FastAPI ставит задачу в Celery и сразу получает `task
 - [Введение в Celery](https://docs.celeryq.dev/en/stable/getting-started/introduction.html)
 - [Celery с Redis](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html)
 - [Задачи и пользовательские состояния](https://docs.celeryq.dev/en/stable/userguide/tasks.html)
+- [Запуск и настройка workers](https://docs.celeryq.dev/en/stable/userguide/workers.html)
+- [Flower — установка и запуск](https://flower.readthedocs.io/en/latest/install.html)
+- [Защита Flower паролем](https://flower.readthedocs.io/en/latest/auth.html)
