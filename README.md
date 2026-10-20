@@ -13,5 +13,13 @@
 - [Асинхронность и многопоточность — основы](<Асинхронность и многопоточность — основы.md>) — `asyncio`, потоки и примеры на задачах ресторана.
 - [Asyncio — задачи, лимиты и очереди](<Asyncio — задачи, лимиты и очереди.md>) — `gather`, `as_completed`, `Semaphore`, `wait_for`, `Lock` и `Queue`.
 - [Celery и Redis — фоновые задачи](<Celery и Redis — фоновые задачи.md>) — очередь, worker, result backend, задачи с прогрессом и связь с FastAPI.
+- [Docker — теория](<Docker — теория.md>) — образы, контейнеры, порты, сети и хранение данных.
+- [Docker — базовые команды](<Docker — базовые команды.md>) — запуск, остановка, логи, команды внутри контейнеров и удаление.
+- [Docker — образы и Dockerfile](<Docker — образы и Dockerfile.md>) — сборка своего образа, слои, кеш, теги и Docker Hub.
+- [Docker Compose — запуск backend и сервисов](<Docker Compose — запуск backend и сервисов.md>) — FastAPI, Redis, Celery, Flower и PostgreSQL в одном проекте.
+
+## Примеры
+
+- [Backend с Docker Compose](<примеры/docker-compose/>) — Dockerfile, compose.yaml и Python-код для запуска пяти сервисов.
 
 Новые темы будут добавляться отдельными файлами.
